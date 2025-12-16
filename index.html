@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>당일배송 건당 단가 산출 계산기</title>
+    <style>
+        body {
+            font-family: 'Malgun Gothic', sans-serif;
+            padding: 20px;
+            background-color: #f4f7f6;
+            color: #333;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        h2 {
+            text-align: center;
+            color: #007bff;
+            margin-bottom: 25px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+        input[type="number"] {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box;
+            font-size: 16px;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 18px;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .result-box {
+            margin-top: 30px;
+            padding: 15px;
+            border: 2px solid #28a745;
+            border-radius: 8px;
+            background-color: #e2f9e9;
+        }
+        .result-box p {
+            margin: 5px 0;
+            font-size: 1.1em;
+            line-height: 1.5;
+        }
+        .result-box strong {
+            color: #28a745;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>🚚 당일배송 건당 단가 산출 계산기</h2>
+
+    <label for="monthlyQuantity">월 평균 예상 수량 (건)</label>
+    <input type="number" id="monthlyQuantity" placeholder="예: 7500" min="0">
+
+    <button id="calculateButton">단가 조회하기</button>
+
+    <div id="result" class="result-box" style="display: none;">
+    </div>
+</div>
+
+<script>
+    // 1. 단가 데이터 정의
+    const priceTiers = [
+        { min: 20000, label: '20,000 건 이상', small: 2300, large: 4250 },
+        { min: 10000, label: '10,000 건 이상', small: 2350, large: 4350 },
+        { min: 5000, label: '5,000 건 이상', small: 2400, large: 4450 },
+        { min: 3000, label: '3,000 건 이상', small: 2450, large: 4550 },
+        { min: 0, label: '3,000 건 미만', small: 2500, large: 4600 }
+    ];
+
+    function calculatePrice() {
+        const inputElement = document.getElementById('monthlyQuantity');
+        const resultDiv = document.getElementById('result');
+        const quantity = parseInt(inputElement.value);
+
+        if (isNaN(quantity) || quantity < 0) {
+            resultDiv.innerHTML = '<p style="color: red;">⚠️ 올바른 월 평균 예상 수량(숫자)을 입력해주세요.</p>';
+            resultDiv.style.display = 'block';
+            return;
+        }
+
+        // 2. 단가 계산 로직 (가장 높은 구간 찾기)
+        let selectedTier = null;
+        for (const tier of priceTiers) {
+            if (quantity >= tier.min) {
+                selectedTier = tier;
+                break;
+            }
+        }
+
+        let resultHTML = '';
+        if (selectedTier) {
+            resultHTML = `
+                <p>✅ **월 예상 수량:** <strong>${quantity.toLocaleString()} 건</strong></p>
+                <hr style="border-top: 1px solid #b7e3c1;">
+                <p>📦 **소형 단가:** <strong>${selectedTier.small.toLocaleString()} 원</strong></p>
+                <p>📦 **대형 단가:** <strong>${selectedTier.large.toLocaleString()} 원</strong></p>
+            `;
+        } else {
+            resultHTML = `<p style="color: red;">⚠️ 입력하신 수량에 해당하는 단가 구간을 찾을 수 없습니다. (입력 수량: ${quantity.toLocaleString()} 건)</p>`;
+        }
+
+        // 3. 결과 표시
+        resultDiv.innerHTML = resultHTML;
+        resultDiv.style.display = 'block';
+    }
+
+    // ⭐️ 중요 수정 사항: HTML 문서가 로드된 후 버튼에 이벤트 리스너 연결
+    document.addEventListener('DOMContentLoaded', (event) => {
+        const button = document.getElementById('calculateButton');
+        if (button) {
+            button.addEventListener('click', calculatePrice);
+        }
+    });
+</script>
+
+</body>
+</html>
